@@ -23,7 +23,7 @@ interface ChatMessage {
   text: string;
   senderId: number;
   senderName: string;
-  timestamp: any;
+  timestamp: unknown;
   type: 'text' | 'image' | 'system';
   imageUrl?: string;
 }
@@ -165,9 +165,16 @@ export default function ChatRoomPage() {
       const messagesRef = collection(db, 'chats', chatRoom.firebase_chat_id, 'messages');
       
       // Prepare message data
-      const messageData: any = {
+      const messageData: {
+        text: string;
+        senderId: number;
+        senderName: string;
+        timestamp: ReturnType<typeof serverTimestamp>;
+        type: string;
+        imageUrl?: string;
+      } = {
         text: newMessage.trim(),
-        senderId: user.id,
+        senderId: Number(user.id),
         senderName: `${user.first_name} ${user.last_name}`,
         timestamp: serverTimestamp(),
         type: 'text'
@@ -199,19 +206,19 @@ export default function ChatRoomPage() {
         await updateDoc(chatDocRef, {
           lastMessageAt: serverTimestamp(),
           lastMessage: newMessage.trim(),
-          lastMessageSender: user.id
+          lastMessageSender: Number(user.id)
         });
-      } catch (updateError: any) {
+      } catch (updateError) {
         // If document doesn't exist, create it
-        if (updateError.code === 'not-found') {
+        if (updateError && typeof updateError === 'object' && 'code' in updateError && updateError.code === 'not-found') {
           const chatDocRef = doc(db, 'chats', chatRoom.firebase_chat_id);
           await setDoc(chatDocRef, {
             lastMessageAt: serverTimestamp(),
             lastMessage: newMessage.trim(),
-            lastMessageSender: user.id,
+            lastMessageSender: Number(user.id),
             created_at: serverTimestamp(),
             updated_at: serverTimestamp(),
-            participants: [user.id],
+            participants: [Number(user.id)],
             is_active: true
           });
         } else {
@@ -236,9 +243,14 @@ export default function ChatRoomPage() {
     }
   };
 
-  const formatMessageTime = (timestamp: any) => {
+  const formatMessageTime = (timestamp: unknown) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    let date: Date;
+    if (timestamp && typeof timestamp === 'object' && 'toDate' in timestamp && typeof timestamp.toDate === 'function') {
+      date = timestamp.toDate();
+    } else {
+      date = new Date(timestamp as string | number | Date);
+    }
     return date.toLocaleTimeString('ar', { 
       hour: '2-digit', 
       minute: '2-digit',

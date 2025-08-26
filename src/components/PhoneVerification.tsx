@@ -54,7 +54,7 @@ export default function PhoneVerification({ onVerificationComplete, onClose }: P
       setMessage(response.message);
       setStep('otp');
       startCountdown();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'خطأ في إرسال الكود');
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ export default function PhoneVerification({ onVerificationComplete, onClose }: P
       setTimeout(() => {
         onVerificationComplete?.();
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'خطأ في التحقق من الكود');
     } finally {
       setLoading(false);
@@ -91,7 +91,7 @@ export default function PhoneVerification({ onVerificationComplete, onClose }: P
       const response = await apiService.sendPhoneOTP(phoneNumber);
       setMessage('تم إعادة إرسال الكود');
       startCountdown();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'خطأ في إعادة إرسال الكود');
     } finally {
       setLoading(false);

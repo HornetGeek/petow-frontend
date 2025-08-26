@@ -79,11 +79,16 @@ export default function MyBreedingRequestsPage() {
     try {
       const response = await apiService.createChatRoom(breedingRequestId);
       router.push(`/chat/${response.chat_room.firebase_chat_id}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error creating chat:', err);
       
       // Handle specific error cases
-      const errorMessage = err.message || err.error || 'خطأ في إنشاء المحادثة';
+      let errorMessage = 'خطأ في إنشاء المحادثة';
+      if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = (err as { message: string }).message;
+      } else if (err && typeof err === 'object' && 'error' in err) {
+        errorMessage = (err as { error: string }).error;
+      }
       
       if (errorMessage.includes('توجد محادثة بالفعل')) {
         // Try to get existing chat room

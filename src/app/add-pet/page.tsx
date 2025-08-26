@@ -67,26 +67,6 @@ export default function AddPetPage() {
     }
   }, [petData.location, locationValue]);
 
-  // Wait for user data to be loaded
-  if (isAuthenticated && !user) {
-    return (
-      <ProtectedRoute message="يجب تسجيل الدخول لإضافة حيوان">
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '200px',
-          color: 'var(--text)'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '1rem' }}></i>
-            <p>جاري تحميل بيانات المستخدم...</p>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
   const loadBreeds = async () => {
     try {
       const breedsData = await apiService.getBreeds();
@@ -130,6 +110,26 @@ export default function AddPetPage() {
     onChange: handleLocationChange,
     placeholder: "ابحث عن موقعك أو انقر على الخريطة"
   }), [locationValue, handleLocationChange]);
+
+  // Wait for user data to be loaded - moved after all hooks
+  if (isAuthenticated && !user) {
+    return (
+      <ProtectedRoute message="يجب تسجيل الدخول لإضافة حيوان">
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '200px',
+          color: 'var(--text)'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '1rem' }}></i>
+            <p>جاري تحميل بيانات المستخدم...</p>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
@@ -215,7 +215,7 @@ export default function AddPetPage() {
       };
 
       console.log('🔍 Sending pet data with coordinates:', finalPetData);
-      const response = await apiService.createPet(finalPetData, imageFiles);
+      await apiService.createPet(finalPetData, imageFiles);
       
       setSuccess('تم إضافة الحيوان الأليف بنجاح!');
       setTimeout(() => {
@@ -730,7 +730,7 @@ export default function AddPetPage() {
                     lineHeight: '1.5'
                   }}>
                     رفع الشهادات الصحية يزيد من ثقة المالكين الآخرين ويجعل حيوانك أكثر جاذبية للتزاوج. 
-                    الحيوانات التي لديها شهادات صحية تحصل على مؤشر "موثق طبياً" في قوائم البحث.
+                    الحيوانات التي لديها شهادات صحية تحصل على مؤشر &quot;موثق طبياً&quot; في قوائم البحث.
                   </p>
                 </div>
               </div>

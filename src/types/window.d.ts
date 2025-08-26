@@ -1,3 +1,3 @@
 interface Window {
-  recaptchaVerifier?: any;
+  recaptchaVerifier?: unknown;
 } 

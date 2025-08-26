@@ -121,17 +121,17 @@ export default function ChatPage() {
             {userChatStatus && (
               <div className="chat-stats">
                 <div className="stat-item">
-                  <span className="stat-value">{userChatStatus.active_chats}</span>
+                  <span className="stat-value">{userChatStatus.active_chats_count}</span>
                   <span className="stat-label">نشطة</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-value">{userChatStatus.total_chats}</span>
-                  <span className="stat-label">إجمالي</span>
+                  <span className="stat-value">{userChatStatus.has_active_chats ? 'نعم' : 'لا'}</span>
+                  <span className="stat-label">محادثات نشطة</span>
                 </div>
-                {userChatStatus.pending_chat_creation > 0 && (
+                {userChatStatus.has_unread_messages && (
                   <div className="stat-item pending">
-                    <span className="stat-value">{userChatStatus.pending_chat_creation}</span>
-                    <span className="stat-label">في انتظار إنشاء المحادثة</span>
+                    <span className="stat-value">!</span>
+                    <span className="stat-label">رسائل جديدة</span>
                   </div>
                 )}
               </div>

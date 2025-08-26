@@ -22,10 +22,10 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
   // تنظيف reCAPTCHA عند إلغاء المكون
   useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined' && window.recaptchaVerifier) {
+      if (typeof window !== 'undefined' && (window as any).recaptchaVerifier) {
         try {
-          window.recaptchaVerifier.clear();
-          window.recaptchaVerifier = null;
+          (window as any).recaptchaVerifier.clear();
+          (window as any).recaptchaVerifier = null;
         } catch (error) {
           console.log('Error clearing reCAPTCHA:', error);
         }
@@ -41,17 +41,17 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
     return `${numbers.slice(0, 3)} ${numbers.slice(3, 6)} ${numbers.slice(6, 10)}`;
   };
 
-  const setupRecaptcha = () => {
+  const setupRecaptcha = (): RecaptchaVerifier => {
     // إعداد reCAPTCHA
     if (typeof window !== 'undefined') {
       // تنظيف reCAPTCHA السابق
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
+      if ((window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier.clear();
+        (window as any).recaptchaVerifier = null;
       }
       
       try {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           size: 'invisible',
           callback: () => {
             console.log('reCAPTCHA solved');
@@ -61,7 +61,7 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
             setError('انتهت صلاحية reCAPTCHA، يرجى المحاولة مرة أخرى');
           }
         });
-        return window.recaptchaVerifier;
+        return (window as any).recaptchaVerifier;
       } catch (error) {
         console.error('reCAPTCHA setup error:', error);
         throw new Error('خطأ في إعداد التحقق الأمني');
@@ -104,11 +104,12 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
       setMessage(`تم إرسال كود التحقق بنجاح عبر Firebase إلى ${formattedPhone}`);
       setStep('otp');
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Firebase SMS Error:', err);
       
       // في حالة فشل Firebase تماماً، استخدم النظام الداخلي كـ backup
-      if (err.code === 'auth/quota-exceeded' || err.code === 'auth/too-many-requests') {
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'auth/quota-exceeded' || 
+          err && typeof err === 'object' && 'code' in err && err.code === 'auth/too-many-requests') {
         try {
           console.log('📱 Firebase quota exceeded, using internal system');
           const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : 
@@ -118,11 +119,15 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
           setConfirmationResult(null);
           setMessage('تم إرسال كود التحقق عبر النظام الداخلي (تحقق من Django Console)');
           setStep('otp');
-        } catch (backupErr: any) {
+        } catch (backupErr: unknown) {
           setError('فشل في إرسال كود التحقق عبر كلا النظامين');
         }
       } else {
-        setError(err.message || 'خطأ في إرسال كود التحقق عبر Firebase');
+        let errorMessage = 'خطأ في إرسال كود التحقق عبر Firebase';
+        if (err && typeof err === 'object' && 'message' in err) {
+          errorMessage = (err as { message: string }).message;
+        }
+        setError(errorMessage);
       }
     } finally {
       setLoading(false);
@@ -147,7 +152,7 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
         try {
           await apiService.verifyFirebasePhone(formattedPhone);
           setMessage('تم التحقق من رقم الهاتف بنجاح عبر Firebase');
-        } catch (djangoError) {
+        } catch (djangoError: unknown) {
           console.log('⚠️ Django verification failed, but Firebase succeeded');
           setMessage('تم التحقق عبر Firebase لكن فشل في حفظ البيانات');
         }
@@ -161,13 +166,18 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
         onVerificationComplete?.();
       }, 1500);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Verification Error:', err);
-      if (err.message?.includes('invalid-verification-code')) {
-        setError('كود التحقق غير صحيح أو منتهي الصلاحية');
-      } else {
-        setError(err.message || 'كود التحقق غير صحيح');
+      let errorMessage = 'كود التحقق غير صحيح';
+      if (err && typeof err === 'object' && 'message' in err) {
+        const message = (err as { message: string }).message;
+        if (message.includes('invalid-verification-code')) {
+          errorMessage = 'كود التحقق غير صحيح أو منتهي الصلاحية';
+        } else {
+          errorMessage = message;
+        }
       }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -198,13 +208,17 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
         const confirmation = await signInWithPhoneNumber(auth, formattedPhone, recaptchaVerifier);
         setConfirmationResult(confirmation);
         setMessage('تم إعادة إرسال الكود عبر Firebase');
-      } catch (firebaseError) {
+      } catch (firebaseError: unknown) {
         // في حالة فشل Firebase، استخدم النظام الداخلي
         await apiService.sendPhoneOTP(formattedPhone);
         setMessage('تم إعادة إرسال الكود عبر النظام الداخلي');
       }
-    } catch (err: any) {
-      setError(err.message || 'خطأ في إعادة إرسال الكود');
+    } catch (err: unknown) {
+      let errorMessage = 'خطأ في إعادة إرسال الكود';
+      if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = (err as { message: string }).message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

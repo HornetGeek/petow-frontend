@@ -77,7 +77,17 @@ export default function PetsPage() {
   const loadPets = async () => {
     try {
       setLoading(true);
-      const params: any = {};
+      const params: {
+        search?: string;
+        pet_type?: string;
+        location?: string;
+        gender?: string;
+        breed?: number;
+        is_fertile?: boolean;
+        user_lat?: number;
+        user_lng?: number;
+        ordering?: string;
+      } = {};
       
       if (filters.search) params.search = filters.search;
       if (filters.pet_type) params.pet_type = filters.pet_type;

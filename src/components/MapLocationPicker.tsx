@@ -44,7 +44,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ value, onChange, 
   const [searchValue, setSearchValue] = useState(value || '');
   
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<{ getPane?: () => unknown } | null>(null);
   const isInternalUpdate = useRef(false);
 
   // تهيئة الخريطة عند التحميل
@@ -183,7 +183,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ value, onChange, 
   };
 
   // معالجة النقر على الخريطة
-  const handleMapClick = async (e: any) => {
+  const handleMapClick = async (e: unknown) => {
     const { lat, lng } = e.latlng;
     
     try {

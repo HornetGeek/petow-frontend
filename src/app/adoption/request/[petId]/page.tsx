@@ -140,7 +140,7 @@ export default function AdoptionApplicationPage() {
 
       await apiService.createAdoptionRequest(apiData);
       router.push('/adoption/my-requests');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error submitting adoption request:', err);
       setError('حدث خطأ أثناء إرسال طلب التبني. يرجى المحاولة مرة أخرى.');
     } finally {
