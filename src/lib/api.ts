@@ -1,5 +1,9 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
+// Debug logging
+console.log('🔍 API_BASE_URL:', API_BASE_URL);
+console.log('🔍 process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+
 interface ApiResponse<T> {
   data: T;
   status: number;
