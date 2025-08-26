@@ -2,12 +2,12 @@
   "version": 2,
   "builds": [
     {
-      "src": "petmatch-nextjs/package.json",
+      "src": "package.json",
       "use": "@vercel/next"
     }
   ],
   "buildCommand": "npm install && npm run build",
-  "outputDirectory": "petmatch-nextjs/.next",
+  "outputDirectory": ".next",
   "routes": [
     {
       "src": "/api/(.*)",
