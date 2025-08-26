@@ -55,7 +55,11 @@ export default function PhoneVerification({ onVerificationComplete, onClose }: P
       setStep('otp');
       startCountdown();
     } catch (err: unknown) {
-      setError(err.message || 'خطأ في إرسال الكود');
+      let errorMessage = 'خطأ في إرسال الكود';
+      if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = (err as { message: string }).message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -74,7 +78,11 @@ export default function PhoneVerification({ onVerificationComplete, onClose }: P
         onVerificationComplete?.();
       }, 1500);
     } catch (err: unknown) {
-      setError(err.message || 'خطأ في التحقق من الكود');
+      let errorMessage = 'خطأ في التحقق من الكود';
+      if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = (err as { message: string }).message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -92,7 +100,11 @@ export default function PhoneVerification({ onVerificationComplete, onClose }: P
       setMessage('تم إعادة إرسال الكود');
       startCountdown();
     } catch (err: unknown) {
-      setError(err.message || 'خطأ في إعادة إرسال الكود');
+      let errorMessage = 'خطأ في إعادة إرسال الكود';
+      if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = (err as { message: string }).message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -560,13 +560,13 @@ class ApiService {
     return this.request<Pet>(`/pets/${id}/`);
   }
 
-  async createPet(petData: unknown, images?: { [key: string]: File }): Promise<Pet> {
+  async createPet(petData: Record<string, string | number | boolean | null | undefined>, images?: { [key: string]: File }): Promise<Pet> {
     const formData = new FormData();
     
     // Add text data
     Object.keys(petData).forEach(key => {
       if (petData[key] !== null && petData[key] !== undefined) {
-        formData.append(key, petData[key]);
+        formData.append(key, String(petData[key]));
       }
     });
     
@@ -593,7 +593,7 @@ class ApiService {
     });
   }
 
-  async updatePet(id: number, petData: unknown): Promise<Pet> {
+  async updatePet(id: number, petData: Record<string, string | number | boolean | null | undefined>): Promise<Pet> {
     return this.request<Pet>(`/pets/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(petData),
@@ -627,7 +627,7 @@ class ApiService {
 
   // Veterinary Clinics
   async getVeterinaryClinics(): Promise<VeterinaryClinic[]> {
-    const response = await this.request<VeterinaryClinic[]>('/pets/veterinary-clinics/');
+    const response = await this.request<VeterinaryClinic[] | { results: VeterinaryClinic[] }>('/pets/veterinary-clinics/');
     return Array.isArray(response) ? response : response.results || [];
   }
 
@@ -654,12 +654,12 @@ class ApiService {
   }
 
   async getMyBreedingRequests(): Promise<BreedingRequest[]> {
-    const response = await this.request<BreedingRequest[]>('/pets/breeding-requests/my/');
+    const response = await this.request<BreedingRequest[] | { results: BreedingRequest[] }>('/pets/breeding-requests/my/');
     return Array.isArray(response) ? response : response.results || [];
   }
 
   async getReceivedBreedingRequests(): Promise<BreedingRequest[]> {
-    const response = await this.request<BreedingRequest[]>('/pets/breeding-requests/received/');
+    const response = await this.request<BreedingRequest[] | { results: BreedingRequest[] }>('/pets/breeding-requests/received/');
     return Array.isArray(response) ? response : response.results || [];
   }
 
@@ -675,7 +675,7 @@ class ApiService {
 
   // Notifications
   async getNotifications(): Promise<Notification[]> {
-    const response = await this.request<Notification[]>('/pets/notifications/');
+    const response = await this.request<Notification[] | { results: Notification[] }>('/pets/notifications/');
     return Array.isArray(response) ? response : response.results || [];
   }
 
@@ -898,12 +898,12 @@ class ApiService {
   }
 
   async getMyAdoptionRequests(): Promise<AdoptionRequestList[]> {
-    const response = await this.request<AdoptionRequestList[]>('/pets/adoption/my/');
+    const response = await this.request<AdoptionRequestList[] | { results: AdoptionRequestList[] }>('/pets/adoption/my/');
     return Array.isArray(response) ? response : response.results || [];
   }
 
   async getReceivedAdoptionRequests(): Promise<AdoptionRequestList[]> {
-    const response = await this.request<AdoptionRequestList[]>('/pets/adoption/received/');
+    const response = await this.request<AdoptionRequestList[] | { results: AdoptionRequestList[] }>('/pets/adoption/received/');
     return Array.isArray(response) ? response : response.results || [];
   }
 

@@ -1,41 +1,23 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic';
-import { LatLng } from 'leaflet';
-import React from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
-// تحميل الخريطة ديناميكياً لتجنب مشاكل SSR
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
+interface SearchResult {
+  display_name: string;
+  lat: string;
+  lon: string;
+  type: string;
+  importance: number;
+}
 
 interface MapLocationPickerProps {
-  value: string;
+  value?: string;
   onChange: (location: string, coordinates?: { lat: number; lng: number }) => void;
   placeholder?: string;
 }
 
-interface SearchResult {
-  place_id: number;
-  licence: string;
-  osm_type: string;
-  osm_id: number;
-  boundingbox: string[];
-  lat: string;
-  lon: string;
-  display_name: string;
-  class: string;
-  type: string;
-  importance: number;
-  icon?: string;
-}
-
-const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ value, onChange, placeholder = 'ابحث عن الموقع...' }) => {
-  console.log('MapLocationPicker render with value:', value);
-  console.log('MapLocationPicker render with value type:', typeof value);
-  console.log('MapLocationPicker render with value length:', value?.length);
-  
+export default function MapLocationPicker({ value = '', onChange, placeholder = 'ابحث عن موقعك' }: MapLocationPickerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -49,10 +31,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ value, onChange, 
 
   // تهيئة الخريطة عند التحميل
   useEffect(() => {
-    if (mapRef.current && typeof mapRef.current.getPane === 'function') {
-      // الخريطة جاهزة
-      console.log('Map initialized successfully');
-    }
+    // Map is ready when component mounts
+    console.log('Map initialized successfully');
   }, []);
 
   // تحديث الخريطة عند تغيير القيمة من الخارج فقط
@@ -183,7 +163,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ value, onChange, 
   };
 
   // معالجة النقر على الخريطة
-  const handleMapClick = async (e: unknown) => {
+  const handleMapClick = async (e: { latlng: { lat: number; lng: number } }) => {
     const { lat, lng } = e.latlng;
     
     try {
@@ -350,25 +330,22 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ value, onChange, 
             }}>
             {searchResults.map((result, index) => (
               <div
-                key={result.place_id}
+                key={`${result.lat}-${result.lon}-${index}`}
                 onClick={() => selectLocation(result)}
                 style={{
-                  padding: '16px 20px',
+                  padding: '12px 16px',
                   cursor: 'pointer',
-                  borderBottom: index < searchResults.length - 1 ? '1px solid #f1f5f9' : 'none',
-                  transition: 'all 0.2s ease',
+                  borderBottom: '1px solid #f1f5f9',
+                  transition: 'background-color 0.2s',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  direction: 'rtl'
+                  flexDirection: 'column',
+                  gap: '4px'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)';
-                  e.currentTarget.style.transform = 'translateX(-4px)';
+                  e.currentTarget.style.backgroundColor = '#f8fafc';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.transform = 'translateX(0)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
                 <div>
@@ -426,7 +403,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ value, onChange, 
             center={mapCenter}
             zoom={13}
               style={{ height: '100%', width: '100%', borderRadius: '13px' }}
-            ref={mapRef}
+            ref={null}
               key="map-container"
           >
             <TileLayer
@@ -577,20 +554,4 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ value, onChange, 
       `}</style>
     </div>
   );
-};
-
-export default React.memo(MapLocationPicker, (prevProps, nextProps) => {
-  // مقارنة صارمة - إعادة render فقط إذا تغيرت القيمة فعلاً
-  const valueChanged = prevProps.value !== nextProps.value;
-  const placeholderChanged = prevProps.placeholder !== nextProps.placeholder;
-  
-  console.log('Memo comparison:', {
-    prevValue: prevProps.value,
-    nextValue: nextProps.value,
-    valueChanged,
-    placeholderChanged,
-    shouldReRender: valueChanged || placeholderChanged
-  });
-  
-  return !(valueChanged || placeholderChanged);
-}); 
+}; 

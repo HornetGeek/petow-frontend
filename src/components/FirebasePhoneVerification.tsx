@@ -5,6 +5,11 @@ import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import { apiService } from '@/lib/api';
 
+// Define a proper interface for the window object extension
+interface ExtendedWindow extends Window {
+  recaptchaVerifier?: RecaptchaVerifier | null;
+}
+
 interface FirebasePhoneVerificationProps {
   onVerificationComplete?: () => void;
   onClose?: () => void;
@@ -19,13 +24,28 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
   const [message, setMessage] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
+  // Helper function to safely access window.recaptchaVerifier
+  const getRecaptchaVerifier = (): RecaptchaVerifier | null => {
+    if (typeof window !== 'undefined') {
+      return (window as ExtendedWindow).recaptchaVerifier || null;
+    }
+    return null;
+  };
+
+  const setRecaptchaVerifier = (verifier: RecaptchaVerifier | null): void => {
+    if (typeof window !== 'undefined') {
+      (window as ExtendedWindow).recaptchaVerifier = verifier;
+    }
+  };
+
   // تنظيف reCAPTCHA عند إلغاء المكون
   useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined' && (window as any).recaptchaVerifier) {
+      const verifier = getRecaptchaVerifier();
+      if (verifier) {
         try {
-          (window as any).recaptchaVerifier.clear();
-          (window as any).recaptchaVerifier = null;
+          verifier.clear();
+          setRecaptchaVerifier(null);
         } catch (error) {
           console.log('Error clearing reCAPTCHA:', error);
         }
@@ -45,13 +65,14 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
     // إعداد reCAPTCHA
     if (typeof window !== 'undefined') {
       // تنظيف reCAPTCHA السابق
-      if ((window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier.clear();
-        (window as any).recaptchaVerifier = null;
+      const existingVerifier = getRecaptchaVerifier();
+      if (existingVerifier) {
+        existingVerifier.clear();
+        setRecaptchaVerifier(null);
       }
       
       try {
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        const newVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           size: 'invisible',
           callback: () => {
             console.log('reCAPTCHA solved');
@@ -61,7 +82,8 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
             setError('انتهت صلاحية reCAPTCHA، يرجى المحاولة مرة أخرى');
           }
         });
-        return (window as any).recaptchaVerifier;
+        setRecaptchaVerifier(newVerifier);
+        return newVerifier;
       } catch (error) {
         console.error('reCAPTCHA setup error:', error);
         throw new Error('خطأ في إعداد التحقق الأمني');
@@ -120,6 +142,7 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
           setMessage('تم إرسال كود التحقق عبر النظام الداخلي (تحقق من Django Console)');
           setStep('otp');
         } catch (backupErr: unknown) {
+          console.log('Backup error:', backupErr);
           setError('فشل في إرسال كود التحقق عبر كلا النظامين');
         }
       } else {
@@ -153,7 +176,7 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
           await apiService.verifyFirebasePhone(formattedPhone);
           setMessage('تم التحقق من رقم الهاتف بنجاح عبر Firebase');
         } catch (djangoError: unknown) {
-          console.log('⚠️ Django verification failed, but Firebase succeeded');
+          console.log('⚠️ Django verification failed, but Firebase succeeded:', djangoError);
           setMessage('تم التحقق عبر Firebase لكن فشل في حفظ البيانات');
         }
       } else {
@@ -209,6 +232,7 @@ export default function FirebasePhoneVerification({ onVerificationComplete, onCl
         setConfirmationResult(confirmation);
         setMessage('تم إعادة إرسال الكود عبر Firebase');
       } catch (firebaseError: unknown) {
+        console.log('Firebase error:', firebaseError);
         // في حالة فشل Firebase، استخدم النظام الداخلي
         await apiService.sendPhoneOTP(formattedPhone);
         setMessage('تم إعادة إرسال الكود عبر النظام الداخلي');
