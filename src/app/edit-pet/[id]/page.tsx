@@ -274,7 +274,7 @@ export default function EditPetPage() {
       }
 
       // Use a custom API call with FormData
-      const response = await fetch(`http://localhost:8000/api/pets/${petId}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/pets/${petId}/`, {
         method: 'PUT',
         headers: {
           'Authorization': `Token ${token}`,

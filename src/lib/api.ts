@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 interface ApiResponse<T> {
   data: T;
@@ -793,9 +793,9 @@ class ApiService {
       
       const result = await response.json();
       
-      // Convert relative URL to full Django server URL
-      if (result.image_url && result.image_url.startsWith('/media/')) {
-        result.image_url = `http://localhost:8000${result.image_url}`;
+      // Convert relative URLs to absolute URLs
+      if (result.image_url && !result.image_url.startsWith('http')) {
+        result.image_url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || ''}${result.image_url}`;
       }
       
       return result;
