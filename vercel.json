@@ -1,13 +1,6 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": ".next",
+
   "routes": [
     {
       "src": "/api/(.*)",
@@ -28,10 +21,5 @@
   ],
   "env": {
     "NEXT_PUBLIC_API_URL": "https://api.petow.app/api"
-  },
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    }
   }
 } 
