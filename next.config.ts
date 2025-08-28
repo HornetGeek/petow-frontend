@@ -27,10 +27,24 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/media/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'api.petow.app',
+        port: '',
+        pathname: '/media/**',
+      },
     ],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/media/:path*',
+        destination: 'https://api.petow.app/media/:path*',
+      },
+    ];
   },
 };
 
