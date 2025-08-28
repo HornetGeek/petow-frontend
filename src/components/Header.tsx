@@ -135,7 +135,7 @@ export default function Header() {
         <div className="header-content">
           <div className="logo">
             <Link href="/" onClick={closeMobileMenu} className={`logo-link ${pathname === '/' ? 'active' : ''}`}>
-              <img src="/peto-wordmark.svg" alt="Peto" className="logo-wordmark" />
+              <img src="/petmatchlogo.jpeg" alt="Petow" className="logo-wordmark" />
             </Link>
           </div>
 
@@ -512,7 +512,7 @@ export default function Header() {
         }
 
         .logo-wordmark {
-          height: clamp(28px, 5vw, 36px);
+          height: clamp(60px, 10vw, 80px);
           width: auto;
           display: block;
         }

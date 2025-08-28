@@ -37,7 +37,7 @@ export default function LoginForm({ onSwitchToRegister, onClose, onAuthSuccess }
       <div className="auth-form">
         <div className="auth-header">
           <h2>تسجيل الدخول</h2>
-          <p>أهلاً بك في Peto</p>
+          <p>أهلاً بك في Petow</p>
         </div>
 
         {error && (

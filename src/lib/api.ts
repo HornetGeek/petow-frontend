@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.petow.app/api';
 
 // Debug logging
 console.log('🔍 API_BASE_URL:', API_BASE_URL);

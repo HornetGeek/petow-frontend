@@ -74,7 +74,7 @@ export default function RegisterForm({ onSwitchToLogin, onClose, onAuthSuccess }
       <div className="auth-form">
         <div className="auth-header">
           <h2>إنشاء حساب جديد</h2>
-          <p>انضم إلى مجتمع Peto</p>
+          <p>انضم إلى مجتمع Petow</p>
         </div>
 
         {error && (
